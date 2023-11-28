@@ -1,8 +1,7 @@
 <script lang="ts">
     import PouchDB from 'pouchdb';
-    import {onMount} from "svelte";
+    import {onMount} from 'svelte';
     let name = '';
-    let time = '';
     let date = '';
     let errors = '';
     let init = false;
@@ -20,6 +19,8 @@
 
     let foodInMeal : Array<food> = [];
     let foodInMealChanges = 0;
+
+    let mealTime = '';
     
     function isValidDate() {
         if(!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(date))
@@ -47,21 +48,11 @@
         if (name == '') {
             errors += "Name cannot be empty.\n"
         }
-        if (time == '') {
-            errors += "Time cannot be empty.\n"
-        }
         if (date == '') {
             errors += "Date cannot be empty.\n"
         }
         if (foodInMeal.length == 0) {
             errors += "Meal must contain atleast 1 food.\n"
-        }
-        var isTimeValid = (time.search(/^\d{2}:\d{2}$/) != -1) &&
-            (parseInt(time.substr(0,2)) >= 0 && parseInt(time.substr(0,2)) <= 24) &&
-            (parseInt(time.substr(3,2)) >= 0 && parseInt(time.substr(3,2)) <= 59)
-        
-        if (!isTimeValid) {
-            errors += "Invalid time given (It must be in 24-hour format HH:MM)\n"
         }
 
         if (!isValidDate()) {
@@ -127,6 +118,10 @@
             });
         }
     }
+
+    function onChange(event) {
+		mealTime = event.currentTarget.value;
+	}
 </script>
 
 <main>
@@ -159,33 +154,51 @@
             </tbody>
         </table>
     </div>
-    <h2>Meal consists of :</h2>
-    <div class="container">
-        <table>
-            <thead>
-            <tr>
-                <th>Food</th>
-                <th>Weight</th>
-                <th>Calories</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-                {#key foodInMealChanges}
-                    {#each foodInMeal as f}
-                        <tr>
-                            <td>{f.name}</td>
-                            <td>{f.weight} g</td>
-                            <td>{f.calories} kcal</td>
-                            <td><button3 on:click={() => remFromMeal(`${f.index}`)}>Delete</button3></td>
-                        </tr>
-                    {/each}
-                {/key}
-            </tbody>
-        </table>
-    </div>
-    <h2>Time eaten (24-hour format) :</h2>
-    <input onkeypress="return /[0-9:]/i.test(event.key)" bind:value={time} placeholder="time"/>
+    {#if foodInMeal.length == 0}
+        <h2>Meal does not have any items. (Add items using "Add to meal" button)</h2>
+    {:else}
+        <h2>Meal consists of :</h2>
+        <div class="container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Food</th>
+                    <th>Weight</th>
+                    <th>Calories</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                    {#key foodInMealChanges}
+                        {#each foodInMeal as f}
+                            <tr>
+                                <td>{f.name}</td>
+                                <td>{f.weight} g</td>
+                                <td>{f.calories} kcal</td>
+                                <td><button3 on:click={() => remFromMeal(`${f.index}`)}>Delete</button3></td>
+                            </tr>
+                        {/each}
+                    {/key}
+                </tbody>
+            </table>
+        </div>
+    {/if}
+    <h2>Meal time :</h2>
+    <label style="color: white;">
+        <input checked={mealTime==="breakfast"} on:change={onChange} type="radio" name="amount" value="breakfast" /> breakfast
+    </label>
+    <label style="color: white;">
+        <input checked={mealTime==="brunch"} on:change={onChange} type="radio" name="amount" value="brunch" /> brunch
+    </label>
+    <label style="color: white;">
+        <input checked={mealTime==="lunch"} on:change={onChange} type="radio" name="amount" value="lunch" /> lunch
+    </label>
+    <label style="color: white;">
+        <input checked={mealTime==="supper"} on:change={onChange} type="radio" name="amount" value="supper" /> supper
+    </label>
+    <label style="color: white;">
+        <input checked={mealTime==="dinner"} on:change={onChange} type="radio" name="amount" value="dinner" /> dinner
+    </label>
     <h2>Day eaten (MM/DD/YYYY)</h2>
     <input bind:value={date} placeholder="date"/>
     <br><br><br>
