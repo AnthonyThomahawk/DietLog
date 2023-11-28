@@ -9,13 +9,17 @@
     let user = 'antonis';
 
     interface food {
+        index : string;
         name : string;
         weight : number;
         calories : number;
     }
 
-    let allfood : Array<food> = [];
-    let allfoodChanges = 0;
+    let allFood : Array<food> = [];
+    let allFoodChanges = 0;
+
+    let foodInMeal : Array<food> = [];
+    let foodInMealChanges = 0;
     
     function isValidDate() {
         if(!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(date))
@@ -48,6 +52,9 @@
         }
         if (date == '') {
             errors += "Date cannot be empty.\n"
+        }
+        if (foodInMeal.length == 0) {
+            errors += "Meal must contain atleast 1 food.\n"
         }
         var isTimeValid = (time.search(/^\d{2}:\d{2}$/) != -1) &&
             (parseInt(time.substr(0,2)) >= 0 && parseInt(time.substr(0,2)) <= 24) &&
@@ -82,25 +89,43 @@
 
             for (let i = 0; i < foodarr.length; i++) {
                 const f : food = {
+                    index : i.toString(),
                     name : foodarr[i].name,
                     weight : foodarr[i].weight,
                     calories : foodarr[i].calories
                 }
-                allfood.push(f);
+                allFood.push(f);
             }
-            allfoodChanges++;
+            allFoodChanges++;
         });
     }
 
-    function addMeal() {
-        var db = new PouchDB(user);
-        db.info().then(function (info) {
-            console.log(info);
-        })
-        db.get('foodtypes').then(function (doc) {
-            console.log(doc);
-        });
+    function addToMeal(index : string) {
+        let i = parseInt(index);
+        foodInMeal.push(allFood[i]);
+        foodInMealChanges++;
+    }
 
+    function remFromMeal(index : string) {
+        let i = parseInt(index);
+        foodInMeal.splice(i, 1);
+        for (let j = 0; j < foodInMeal.length; j++) {
+            foodInMeal[j].index = j.toString();
+        }
+        foodInMealChanges++;
+    }
+
+    function addMeal() {
+        logErrors();
+        if (errors == '') {
+                var db = new PouchDB(user);
+            db.info().then(function (info) {
+                console.log(info);
+            })
+            db.get('foodtypes').then(function (doc) {
+                console.log(doc);
+            });
+        }
     }
 </script>
 
@@ -109,7 +134,7 @@
 
     <h2>Name :</h2>
     <input bind:value={name} placeholder="name"/>
-    <h2>Available foods to add to meal : </h2>
+    <h2>Available foods to add : </h2>
     <div class="container">
         <table>
             <thead>
@@ -117,15 +142,17 @@
                 <th>Food</th>
                 <th>Weight</th>
                 <th>Calories</th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
-                {#key allfoodChanges}
-                    {#each allfood as f}
+                {#key allFoodChanges}
+                    {#each allFood as f}
                         <tr>
                             <td>{f.name}</td>
-                            <td>{f.weight}</td>
-                            <td>{f.calories}</td>
+                            <td>{f.weight} g</td>
+                            <td>{f.calories} kcal</td>
+                            <td><button3 on:click={() => addToMeal(`${f.index}`)}>Add to meal</button3></td>
                         </tr>
                     {/each}
                 {/key}
@@ -140,16 +167,20 @@
                 <th>Food</th>
                 <th>Weight</th>
                 <th>Calories</th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>test</td>
-                    <td>
-                        yrdy
-                    </td>
-                    <td>fgh €</td>
-                </tr>
+                {#key foodInMealChanges}
+                    {#each foodInMeal as f}
+                        <tr>
+                            <td>{f.name}</td>
+                            <td>{f.weight} g</td>
+                            <td>{f.calories} kcal</td>
+                            <td><button3 on:click={() => remFromMeal(`${f.index}`)}>Delete</button3></td>
+                        </tr>
+                    {/each}
+                {/key}
             </tbody>
         </table>
     </div>
@@ -158,7 +189,7 @@
     <h2>Day eaten (MM/DD/YYYY)</h2>
     <input bind:value={date} placeholder="date"/>
     <br><br><br>
-    <button3 on:click={getFoodTypes}>Add meal</button3>
+    <button3 on:click={addMeal}>Add meal</button3>
     <br><br><br>
     {#if errors != ''}
         <err>Errors : </err><br><br>
