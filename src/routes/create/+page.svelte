@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import PouchDB from 'pouchdb';
     let name = ''
     let calories = ''
@@ -86,15 +86,15 @@
     <h2>Food name: </h2>
     <input bind:value={name} placeholder="name"/>
     <h2>Calories (in kcal) :</h2>
-    <input onkeypress="return /[0-9]/i.test(event.key)" bind:value={calories} placeholder="calories"/>
+    <input type="number" onkeypress="return /[0-9]/i.test(event.key)" bind:value={calories} placeholder="calories"/>
     <h2>Weight (in grams) for the calories above :</h2>
-    <input onkeypress="return /[0-9]/i.test(event.key)" bind:value={weight} placeholder="weight"/><br><br><br><br>
+    <input type="number" onkeypress="return /[0-9]/i.test(event.key)" bind:value={weight} placeholder="weight"/><br><br><br><br>
     <button3 on:click={addFoodToDB}>Add food type</button3><br><br><br>
     {#if errors != ''}
         <err>Errors : </err><br><br>
         <err>{errors}</err>
         <h2 style="color: red;">Food not added, fix errors first.</h2>
     {:else if init}
-        <h2 style="color: green;">Food added!</h2>
+        <h2 style="color: green;">Food "{name}" added!</h2>
     {/if}
 </main>
