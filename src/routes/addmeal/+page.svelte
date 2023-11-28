@@ -253,7 +253,7 @@
 
     main {
         height: 100vh;
-        widows: 100vw;
+        width: auto;
         overflow: auto;
         padding: 20px;
     }
