@@ -250,4 +250,11 @@
     td:last-child {
         border-bottom: none;
     }
+
+    main {
+        height: 100vh;
+        widows: 100vw;
+        overflow: auto;
+        padding: 20px;
+    }
 </style>
