@@ -21,6 +21,8 @@
     let foodInMealChanges = 0;
 
     let mealTime = '';
+    let totalWeight = 0
+    let totalKcal = 0
     
     function isValidDate() {
         if(!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(date))
@@ -53,6 +55,9 @@
         }
         if (foodInMeal.length == 0) {
             errors += "Meal must contain atleast 1 food.\n"
+        }
+        if (mealTime == '') {
+            errors += "Meal time is not set.\n"
         }
 
         if (!isValidDate()) {
@@ -91,10 +96,26 @@
         });
     }
 
+    function calcTotalWeight() {
+        totalWeight = 0;
+        for (let i = 0; i < foodInMeal.length; i++) {
+            totalWeight += foodInMeal[i].weight;
+        }
+    }
+
+    function calcTotalKcal() {
+        totalKcal = 0;
+        for (let i = 0; i < foodInMeal.length; i++) {
+            totalKcal += foodInMeal[i].calories;
+        }
+    }
+
     function addToMeal(index : string) {
         let i = parseInt(index);
         let clone = Object.assign({}, allFood[i]);
         foodInMeal.push(clone);
+        calcTotalKcal();
+        calcTotalWeight();
         foodInMealChanges++;
     }
 
@@ -104,7 +125,8 @@
         for (let j = 0; j < foodInMeal.length; j++) {
             foodInMeal[j].index = j.toString();
         }
-        let a = 5;
+        calcTotalKcal();
+        calcTotalWeight();
         foodInMealChanges++;
     }
 
@@ -183,6 +205,10 @@
                     {/key}
                 </tbody>
             </table>
+            {#key foodInMealChanges}
+                <h3>Total weight : {totalWeight} g</h3>
+                <h3>Total calories : {totalKcal} kcal</h3>
+            {/key}
         </div>
     {/if}
     <h2>Meal time :</h2>
