@@ -93,7 +93,8 @@
 
     function addToMeal(index : string) {
         let i = parseInt(index);
-        foodInMeal.push(allFood[i]);
+        let clone = Object.assign({}, allFood[i]);
+        foodInMeal.push(clone);
         foodInMealChanges++;
     }
 
@@ -103,6 +104,7 @@
         for (let j = 0; j < foodInMeal.length; j++) {
             foodInMeal[j].index = j.toString();
         }
+        let a = 5;
         foodInMealChanges++;
     }
 
