@@ -25,7 +25,7 @@
     let totalKcal = 0
     
     function isValidDate() {
-        if(!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(date))
+        if(!/^\d{2}\/\d{2}\/\d{4}$/.test(date))
             return false;
 
         var parts = date.split("/");
@@ -133,13 +133,52 @@
     function addMeal() {
         logErrors();
         if (errors == '') {
-                var db = new PouchDB(user);
-            db.info().then(function (info) {
-                console.log(info);
-            })
-            db.get('foodtypes').then(function (doc) {
-                console.log(doc);
-            });
+            var db = new PouchDB(user);
+
+            var meal = {
+                "name" : name,
+                "time" : mealTime,
+                "date" : date,
+                "foodInMeal" : []
+            }
+
+            for (let i = 0; i < foodInMeal.length; i++) {
+                var f = {
+                    "name" : foodInMeal[i].name,
+                    "calories" : foodInMeal[i].calories,
+                    "weight" : foodInMeal[i].weight
+                }
+            }
+
+            meal.foodInMeal.push(f);
+
+            docExists().then(function (res) {
+                    if (res) {
+                        db.get('meals').then(function (olddoc) {
+                            var oldmeals = olddoc.allmeals;
+                            var newdoc = {
+                                "_id" : "meals",
+                                "allmeals" : [],
+                                "_rev" : oldmeals._rev
+                            };
+
+                            for (let i = 0; i < oldmeals.length; i++) {
+                                newdoc.allmeals.push(oldmeals[i]);
+                            }
+
+                            newdoc.allmeals.push(meal);
+                            db.put(newdoc);
+                        })
+                    }
+                    else {
+                        var doc = {
+                            "_id" : "meals",
+                            "allmeals": [meal]
+                        }
+                        db.put(doc);
+                    }
+                }
+            );
         }
     }
 
