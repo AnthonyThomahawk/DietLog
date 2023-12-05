@@ -21,8 +21,10 @@
     let foodInMealChanges = 0;
 
     let mealTime = '';
-    let totalWeight = 0
-    let totalKcal = 0
+    let totalWeight = 0;
+    let totalKcal = 0;
+
+    let nofoodtypes = false;
     
     function isValidDate() {
         if(!/^\d{2}\/\d{2}\/\d{4}$/.test(date))
@@ -65,9 +67,9 @@
         }
     }
 
-    const docExists = function(){
+    const docExists = function(doc : string){
         var db = new PouchDB(user)
-        return db.get('meals').then(function () {
+        return db.get(doc).then(function () {
             return Promise.resolve(true);
         }).catch(function () {
             return Promise.resolve(false);
@@ -80,20 +82,29 @@
 
     async function getFoodTypes() {
         var db = new PouchDB(user);
-        db.get('foodtypes').then(function (doc) {
-            let foodarr = doc.types;
 
-            for (let i = 0; i < foodarr.length; i++) {
-                const f : food = {
-                    index : i.toString(),
-                    name : foodarr[i].name,
-                    weight : foodarr[i].weight,
-                    calories : foodarr[i].calories
-                }
-                allFood.push(f);
+        docExists('foodtypes').then(function(res) {
+            if (res) {
+                db.get('foodtypes').then(function (doc) {
+                    let foodarr = doc.types;
+
+                    for (let i = 0; i < foodarr.length; i++) {
+                        const f : food = {
+                            index : i.toString(),
+                            name : foodarr[i].name,
+                            weight : foodarr[i].weight,
+                            calories : foodarr[i].calories
+                        }
+                        allFood.push(f);
+                    }
+                    allFoodChanges++;
+                    nofoodtypes = false;
+                });
+            } else {
+                nofoodtypes = true;
             }
-            allFoodChanges++;
         });
+    
     }
 
     function calcTotalWeight() {
@@ -152,7 +163,7 @@
 
             meal.foodInMeal.push(f);
 
-            docExists().then(function (res) {
+            docExists('meals').then(function (res) {
                     if (res) {
                         db.get('meals').then(function (olddoc) {
                             var oldmeals = olddoc.allmeals;
@@ -192,31 +203,35 @@
 
     <h2>Name :</h2>
     <input bind:value={name} placeholder="name"/>
-    <h2>Available foods to add : </h2>
-    <div class="container">
-        <table>
-            <thead>
-            <tr>
-                <th>Food</th>
-                <th>Weight</th>
-                <th>Calories</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-                {#key allFoodChanges}
-                    {#each allFood as f}
-                        <tr>
-                            <td>{f.name}</td>
-                            <td>{f.weight} g</td>
-                            <td>{f.calories} kcal</td>
-                            <td><button3 on:click={() => addToMeal(`${f.index}`)}>Add to meal</button3></td>
-                        </tr>
-                    {/each}
-                {/key}
-            </tbody>
-        </table>
-    </div>
+    {#if nofoodtypes}
+        <h2>There are no available foods to add. Please add some here</h2>
+    {:else}
+        <h2>Available foods to add : </h2>
+        <div class="container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Food</th>
+                    <th>Weight</th>
+                    <th>Calories</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                    {#key allFoodChanges}
+                        {#each allFood as f}
+                            <tr>
+                                <td>{f.name}</td>
+                                <td>{f.weight} g</td>
+                                <td>{f.calories} kcal</td>
+                                <td><button3 on:click={() => addToMeal(`${f.index}`)}>Add to meal</button3></td>
+                            </tr>
+                        {/each}
+                    {/key}
+                </tbody>
+            </table>
+        </div>
+    {/if}
     {#if foodInMeal.length == 0}
         <h2>Meal does not have any items. (Add items using "Add to meal" button)</h2>
     {:else}
